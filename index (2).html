@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab Maya Ikatan Kimia</title>
+<style>
+:root{--bg:#e9eef5;--surf:#fff;--surf2:#f1f5fa;--ink:#1b2a3a;--mut:#5b6b7c;--acc:#0f6fd1;--acc2:#e8590c;--ok:#1a8f4c;--bad:#c92a2a;--line:#cfd8e3;--hd:#0b3a6b;--hdink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1119;--surf:#16202c;--surf2:#1d2a39;--ink:#e6edf5;--mut:#9fb0c2;--acc:#5aa9ff;--acc2:#ff9a5c;--ok:#4cd08a;--bad:#ff7b7b;--line:#2d3d50;--hd:#0a2a4d}}
+:root[data-theme="dark"]{--bg:#0b1119;--surf:#16202c;--surf2:#1d2a39;--ink:#e6edf5;--mut:#9fb0c2;--acc:#5aa9ff;--acc2:#ff9a5c;--ok:#4cd08a;--bad:#ff7b7b;--line:#2d3d50;--hd:#0a2a4d}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+#wrap{position:absolute;inset:0}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:var(--bg);display:flex;flex-direction:column;font-size:15px}
+header{height:60px;flex:none;background:var(--hd);color:var(--hdink);display:flex;align-items:center;padding:0 18px;gap:14px}
+header h1{font-size:19px;margin:0;white-space:nowrap}
+header h1 small{display:block;font-size:11px;font-weight:400;opacity:.8}
+nav{display:flex;gap:6px;margin-left:12px;flex:1}
+.tab{background:transparent;color:var(--hdink);border:0;border-radius:10px;padding:8px 10px;font-size:14px;cursor:pointer;font-weight:600;opacity:.8;white-space:nowrap}
+.tab:hover{opacity:1;background:rgba(255,255,255,.12)}
+.tab.on{background:var(--surf);color:var(--hd);opacity:1}
+.ib{background:rgba(255,255,255,.16);color:var(--hdink);border:0;border-radius:10px;padding:8px 10px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap}
+.ib:hover{background:rgba(255,255,255,.28)}
+main{flex:1;position:relative;min-height:0}
+.pane{position:absolute;inset:0;padding:14px 18px;display:none}
+.pane.on{display:block}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.btn:hover{filter:brightness(1.1)}.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.alt{background:var(--surf2);color:var(--ink);border:1px solid var(--line)}
+.btn.alt.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+h2{font-size:20px;margin:0 0 8px}h3{font-size:16px;margin:0 0 6px;color:var(--acc)}
+p{margin:0 0 7px;line-height:1.45}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.sub{display:flex;gap:8px;margin-bottom:12px}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:7px 10px;text-align:left;font-size:15px}th{background:var(--surf2)}
+.chip{display:inline-block;background:var(--surf2);border:1px solid var(--line);border-radius:20px;padding:2px 10px;font-size:13px;margin:2px 3px 2px 0}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.steps .card{height:268px}
+.num{width:34px;height:34px;border-radius:50%;background:var(--acc2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;margin-bottom:8px}
+/* sim */
+#sim{display:grid;grid-template-columns:230px 560px 1fr;gap:12px;height:100%}
+#sim .col{display:flex;flex-direction:column;gap:10px;min-height:0}
+.mol{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mol .btn{padding:8px 4px;font-size:15px}
+.stp{display:flex;flex-direction:column;gap:6px}
+.stp .btn{text-align:left}
+#cv{background:var(--surf);border:1px solid var(--line);border-radius:14px;width:560px;height:430px}
+#hint{margin-top:10px;min-height:70px;font-size:15px}
+.row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:15px;animation:in .35s}
+.row b{flex:0 0 138px;color:var(--mut);font-weight:600}
+@keyframes in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.meter{display:inline-block;width:130px;height:10px;background:var(--surf2);border-radius:6px;vertical-align:middle;overflow:hidden;border:1px solid var(--line)}
+.meter i{display:block;height:100%;background:var(--acc2)}
+.bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0}
+.bar span{width:44px;text-align:right}.bar em{flex:1;height:14px;background:var(--surf2);border-radius:4px;overflow:hidden}
+.bar em i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .6s}
+.bar.me em i{background:var(--acc2)}.bar.me span{font-weight:700;color:var(--acc2)}
+.bar small{width:70px;color:var(--mut)}
+.dash{animation:dash 1s linear infinite}@keyframes dash{to{stroke-dashoffset:-24}}
+/* lkpd */
+#lk{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;height:560px;align-content:start}
+.q{padding:8px 12px}.q p{margin:0 0 5px;font-size:14.5px}
+select,textarea{width:100%;box-sizing:border-box;background:var(--surf2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px;font-size:14px;font-family:inherit}
+.q.ok{border-color:var(--ok)}.q.no{border-color:var(--bad)}
+.fb{font-size:13px;margin-top:4px;font-weight:600}
+.big{font-size:34px;font-weight:800;color:var(--acc)}
+#splash{position:absolute;inset:0;z-index:100;background:radial-gradient(circle at 72% 45%,#1b5fa8 0,#0b2e57 55%,#071b34 100%);color:#fff;display:flex;align-items:center;transition:opacity .6s,transform .6s;overflow:hidden}
+#splash.out{opacity:0;transform:scale(1.05);pointer-events:none}
+#splash .L{width:660px;padding-left:80px;position:relative;z-index:2}
+#splash .tag{display:inline-block;background:rgba(255,255,255,.16);border-radius:20px;padding:5px 14px;font-size:15px;font-weight:600}
+#splash h1{font-size:60px;line-height:1.05;margin:16px 0 12px}
+#splash .sub{font-size:20px;opacity:.88;line-height:1.4}
+.ld{width:470px;height:14px;border-radius:8px;background:rgba(255,255,255,.18);overflow:hidden;margin-top:36px}
+.ld i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5aa9ff,#ffb25c);transition:width .25s}
+#spbtn{margin-top:22px;font-size:22px;padding:14px 40px;border-radius:14px;border:0;background:#ff8a3d;color:#fff;font-weight:800;cursor:pointer;opacity:.35;font-family:inherit}
+#spbtn:not(:disabled){opacity:1;animation:pulse 1.2s infinite}
+#spbtn:disabled{cursor:wait}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,138,61,.6)}50%{box-shadow:0 0 0 16px rgba(255,138,61,0)}}
+#splash .art{position:absolute;right:20px;top:90px;width:580px;height:470px}
+.fl{animation:flt 5s ease-in-out infinite alternate}.fl2{animation-delay:-2s;animation-duration:6.5s}.fl3{animation-delay:-3.5s;animation-duration:7s}
+@keyframes flt{from{transform:translateY(-12px)}to{transform:translateY(12px)}}
+#spsnd{position:absolute;top:18px;right:22px;z-index:3}
+.dv{text-align:center;height:540px;padding:22px 16px 0;background:linear-gradient(180deg,var(--surf2) 0,var(--surf) 55%);position:relative;overflow:hidden}
+.pf{width:240px;height:252px;margin:4px auto 12px;position:relative}
+.pf .arch{position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden;border:4px solid var(--surf);box-sizing:border-box;border-radius:120px 120px 22px 22px;background:linear-gradient(155deg,#1b5fa8 0,#5aa9ff 55%,#ff9a5c 100%);box-shadow:0 14px 34px rgba(15,111,209,.35)}
+.pf .ring{position:absolute;left:-10px;right:-10px;top:-10px;bottom:-10px;border-radius:130px 130px 30px 30px;border:2px dashed var(--acc);opacity:.45;animation:spin 14s linear infinite alternate}
+@keyframes spin{from{transform:scale(1)}to{transform:scale(1.04)}}
+.pf img{position:absolute;left:0;top:8px;width:100%;height:auto;display:block}
+.dv .nm{font-size:23px;font-weight:800;line-height:1.2;margin-top:8px}
+.dv .rl{color:var(--acc2);font-weight:700;margin:3px 0 8px;font-size:15px}
+.gel{display:inline-block;background:var(--acc);color:#fff;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700;margin:0 3px}
+.tp{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);line-height:1.4}.tp .num{flex:none;margin:0}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.flow .chip{background:var(--acc);color:#fff;border:0;font-size:13.5px;padding:4px 11px}
+#quiz{display:grid;grid-template-columns:1fr 290px;gap:14px}
+.opt{display:block;width:100%;text-align:left;margin-bottom:9px;padding:12px 14px;font-size:16px}
+.opt.right{background:var(--ok);color:#fff;border-color:var(--ok)}.opt.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.dots i{width:28px;height:28px;border-radius:50%;background:var(--surf2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:12px;font-weight:700}
+.dots i.r{background:var(--ok);color:#fff;border-color:var(--ok)}.dots i.w{background:var(--bad);color:#fff;border-color:var(--bad)}.dots i.c{border-color:var(--acc2);border-width:2px}
+.pbar{height:10px;background:var(--surf2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}.pbar i{display:block;height:100%;background:var(--acc);transition:width .4s}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage">
+<div id="splash">
+ <button class="ib" id="spsnd">🔊 Suara: Aktif</button>
+ <div class="art" id="sp-art">
+  <svg viewBox="0 0 580 470" width="580" height="470" aria-hidden="true">
+   <circle cx="290" cy="235" r="200" fill="rgba(255,255,255,.06)"/><circle cx="290" cy="235" r="140" fill="rgba(255,255,255,.06)"/>
+   <line x1="170" y1="130" x2="390" y2="230" stroke="#5aa9ff" stroke-width="4" stroke-dasharray="10 8" class="dash"/>
+   <line x1="390" y1="230" x2="190" y2="360" stroke="#ffb25c" stroke-width="4" stroke-dasharray="4 9" class="dash"/>
+   <g transform="translate(170 130)"><g class="fl">
+    <line x1="0" y1="0" x2="-48" y2="44" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/><line x1="0" y1="0" x2="48" y2="44" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/>
+    <circle r="34" fill="#e5484d"/><circle cx="-48" cy="44" r="22" fill="#dfe6ee"/><circle cx="48" cy="44" r="22" fill="#dfe6ee"/>
+    <text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">O</text><text x="0" y="-50" text-anchor="middle" font-size="18" fill="#fff" font-family="system-ui,sans-serif" font-weight="600">H₂O</text></g></g>
+   <g transform="translate(400 230)"><g class="fl fl2">
+    <line x1="0" y1="0" x2="0" y2="-62" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/><line x1="0" y1="0" x2="-58" y2="46" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/><line x1="0" y1="0" x2="58" y2="46" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/><line x1="0" y1="0" x2="0" y2="70" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="0" cy="-62" r="20" fill="#dfe6ee"/><circle cx="-58" cy="46" r="20" fill="#dfe6ee"/><circle cx="58" cy="46" r="20" fill="#dfe6ee"/><circle cx="0" cy="70" r="20" fill="#dfe6ee"/><circle r="30" fill="#5d6670"/>
+    <text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">C</text><text x="0" y="-95" text-anchor="middle" font-size="18" fill="#fff" font-family="system-ui,sans-serif" font-weight="600">CH₄</text></g></g>
+   <g transform="translate(190 360)"><g class="fl fl3">
+    <line x1="-80" y1="0" x2="80" y2="0" stroke="#cfd8e3" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="-80" r="28" fill="#e5484d"/><circle cx="80" r="28" fill="#e5484d"/><circle r="30" fill="#5d6670"/>
+    <text x="-80" y="8" text-anchor="middle" font-size="20" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">O</text><text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">C</text><text x="80" y="8" text-anchor="middle" font-size="20" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">O</text><text y="-46" text-anchor="middle" font-size="18" fill="#fff" font-family="system-ui,sans-serif" font-weight="600">CO₂</text></g></g>
+  </svg>
+ </div>
+ <div class="L">
+  <span class="tag">🧪 Media Pembelajaran Interaktif · Fase F SMA</span>
+  <h1>Lab Maya<br>Ikatan Kimia</h1>
+  <div class="sub">Jenis ikatan, bentuk molekul, dan gaya antarmolekul untuk memprediksi sifat fisik materi.</div>
+  <div class="ld"><i id="spf"></i></div>
+  <div style="display:flex;justify-content:space-between;width:470px;margin-top:8px;font-size:15px;opacity:.9"><span id="spm">Memuat…</span><b id="spp">0%</b></div>
+  <button id="spbtn" disabled>▶ MULAI</button>
+  <div style="margin-top:30px;font-size:14px;opacity:.75">Dikembangkan oleh <b>Ana Marleni, S.Pd, M.Pd, Gr</b></div>
+ </div>
+</div>
+<header>
+ <h1>⚛️ Lab Maya Ikatan Kimia<small>Ikatan · Bentuk Molekul · Gaya Antarmolekul · Sifat Fisik</small></h1>
+ <nav>
+  <button class="tab on" data-t="tujuan">🎯 Tujuan</button>
+  <button class="tab" data-t="teori">📘 Teori</button>
+  <button class="tab" data-t="prosedur">📋 Prosedur</button>
+  <button class="tab" data-t="simulasi">🧪 Simulasi</button>
+  <button class="tab" data-t="lkpd">📝 LKPD</button>
+  <button class="tab" data-t="kuis">❓ Kuis</button>
+  <button class="tab" data-t="dev">👩‍💻 Pengembang</button>
+ </nav>
+ <button class="ib" id="snd">🔊 Suara: Aktif</button>
+ <button class="ib" id="rst">↺ Reset</button>
+</header>
+<main>
+
+<section class="pane on" id="p-tujuan">
+ <h2>🎯 Tujuan Pembelajaran</h2>
+ <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:14px">
+  <div class="card" style="height:535px">
+   <p style="color:var(--mut)">Setelah menggunakan lab maya ini, siswa mampu:</p>
+   <div class="tp"><div class="num">1</div><div>Membedakan <b>ikatan ion, kovalen polar, kovalen nonpolar, dan logam</b> berdasarkan jenis atom penyusun dan selisih keelektronegatifan (ΔEN).</div></div>
+   <div class="tp"><div class="num">2</div><div>Memprediksi <b>bentuk molekul</b> dengan teori VSEPR melalui jumlah PEI, PEB, dan sudut ikatan.</div></div>
+   <div class="tp"><div class="num">3</div><div>Menentukan <b>kepolaran molekul</b> dari bentuk molekul dan resultan momen dipol.</div></div>
+   <div class="tp"><div class="num">4</div><div>Mengidentifikasi <b>gaya antarmolekul</b> (London, dipol–dipol, ikatan hidrogen) dan membandingkan kekuatannya.</div></div>
+   <div class="tp"><div class="num">5</div><div>Memprediksi dan menjelaskan <b>sifat fisik</b> zat (titik leleh/didih, wujud, kelarutan, daya hantar) berdasarkan jenis ikatan dan gaya antarmolekul.</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px">
+   <div class="card"><h3>Alur berpikir</h3><div class="flow"><span class="chip">Jenis ikatan</span>→<span class="chip">Bentuk molekul</span>→<span class="chip">Kepolaran</span>→<span class="chip">Gaya antarmolekul</span>→<span class="chip">Sifat fisik</span></div></div>
+   <div class="card"><h3>Pertanyaan pemandu</h3><p>• Mengapa NaCl berwujud padat, sedangkan CH₄ berupa gas?<br>• Mengapa CO₂ nonpolar padahal ikatannya polar?<br>• Mengapa air bertitik didih jauh lebih tinggi daripada metana?</p></div>
+   <div class="card"><h3>Kriteria keberhasilan</h3><p>✔ Menyelesaikan 5 langkah simulasi pada minimal 4 zat.<br>✔ Skor LKPD ≥ 75.<br>✔ Skor kuis ≥ 70.</p></div>
+   <button class="btn" id="mulai" style="font-size:16px;padding:12px">Mulai belajar: buka Teori ▶</button>
+  </div>
+ </div>
+</section>
+
+<section class="pane" id="p-teori">
+ <div class="sub" id="tsub">
+  <button class="btn alt on" data-s="0">1 · Jenis Ikatan</button>
+  <button class="btn alt" data-s="1">2 · Bentuk Molekul (VSEPR)</button>
+  <button class="btn alt" data-s="2">3 · Gaya Antarmolekul &amp; Sifat Fisik</button>
+ </div>
+ <div id="tbody"></div>
+</section>
+
+<section class="pane" id="p-prosedur">
+ <h2>Prosedur Percobaan Virtual</h2>
+ <div class="steps">
+  <div class="card"><div class="num">1</div><h3>Pilih zat</h3><p>Buka tab <b>Simulasi</b>, lalu pilih satu dari 8 zat: NaCl, HCl, H₂O, CO₂, NH₃, CH₄, BF₃, atau N₂.</p></div>
+  <div class="card"><div class="num">2</div><h3>Tentukan jenis ikatan</h3><p>Klik <b>1 · Hitung ΔEN</b>. Bandingkan keelektronegatifan atom penyusun, lalu tentukan: ion, kovalen polar, atau kovalen nonpolar.</p></div>
+  <div class="card"><div class="num">3</div><h3>Amati bentuk molekul</h3><p>Klik <b>2 · Bentuk VSEPR</b>. Catat jumlah PEI, PEB, bentuk, dan sudut ikatan.</p></div>
+  <div class="card"><div class="num">4</div><h3>Analisis kepolaran</h3><p>Klik <b>3 · Dipol &amp; Kepolaran</b>. Perhatikan arah panah dipol; apakah resultannya saling meniadakan?</p></div>
+  <div class="card"><div class="num">5</div><h3>Tentukan gaya antarmolekul</h3><p>Klik <b>4 · Gaya Antarmolekul</b>. Amati garis putus-putus antarmolekul dan meter kekuatannya.</p></div>
+  <div class="card"><div class="num">6</div><h3>Prediksi sifat fisik &amp; isi LKPD</h3><p>Klik <b>5 · Prediksi Sifat</b>, bandingkan titik didih pada grafik, ulangi untuk zat lain, lalu isi tab <b>LKPD</b>. Tombol <b>Reset</b> mengulang dari awal.</p></div>
+ </div>
+</section>
+
+<section class="pane" id="p-simulasi">
+ <div id="sim">
+  <div class="col">
+   <div class="card"><h3>Pilih zat</h3><div class="mol" id="mols"></div></div>
+   <div class="card stp" id="stps"><h3>Langkah analisis</h3></div>
+   <button class="btn alt" id="simrst">↺ Ulang zat ini</button>
+  </div>
+  <div class="col">
+   <svg id="cv" viewBox="0 0 560 430"></svg>
+   <div class="card" id="hint"></div>
+  </div>
+  <div class="col">
+   <div class="card" id="info" style="min-height:262px"></div>
+   <div class="card" style="flex:1"><h3>Perbandingan titik didih (K)</h3><div id="chart"></div></div>
+  </div>
+ </div>
+</section>
+
+<section class="pane" id="p-lkpd">
+ <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+  <h2 style="margin:0">LKPD · Lembar Kerja Peserta Didik</h2>
+  <input id="nama" placeholder="Nama siswa…" style="background:var(--surf2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:14px;width:200px">
+  <span style="flex:1"></span>
+  <span id="skor" class="chip" style="font-size:15px">Skor: –</span>
+  <button class="btn" id="cek">✔ Periksa Jawaban</button>
+  <button class="btn alt" id="lkrst">↺ Kosongkan</button>
+ </div>
+ <div id="lk"></div>
+</section>
+
+<section class="pane" id="p-dev">
+ <div style="display:grid;grid-template-columns:420px 1fr;gap:16px">
+  <div class="card dv">
+   <div class="pf" id="dvfoto"><div class="ring"></div><div class="arch"><img src="data:image/webp;base64,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" alt="Foto Ana Marleni, S.Pd, M.Pd, Gr"></div></div>
+   <div class="nm">Ana Marleni<span class="gel">S.Pd</span><span class="gel">M.Pd</span><span class="gel">Gr</span></div>
+   <div class="rl">Pengembang Media Pembelajaran</div>
+   <p><span class="chip">Kimia</span><span class="chip">Media interaktif</span><span class="chip">Fase F · SMA</span></p>
+   <button class="btn" id="hello" style="margin-top:20px">👋 Sapa pengembang</button>
+   <p id="hellotxt" style="margin-top:12px;font-weight:600;color:var(--acc2)"></p>
+  </div>
+  <div class="card" style="height:540px">
+   <h2>Tentang Media Ini</h2>
+   <p>Lab maya ini membantu siswa SMA memprediksi <b>sifat fisik materi</b> melalui alur berpikir: <b>jenis ikatan → bentuk molekul → kepolaran → gaya antarmolekul → titik didih/leleh &amp; kelarutan</b>.</p>
+   <h3 style="margin-top:14px">Capaian yang diharapkan</h3>
+   <p>• Membedakan ikatan ion, kovalen polar, dan kovalen nonpolar berdasarkan ΔEN.<br>• Memprediksi bentuk molekul dengan teori VSEPR.<br>• Menghubungkan bentuk &amp; kepolaran dengan gaya antarmolekul.<br>• Menjelaskan perbedaan titik didih, wujud, dan kelarutan berbagai zat.</p>
+   <h3 style="margin-top:14px">Cara penggunaan</h3>
+   <p>Ikuti urutan tab: Teori → Prosedur → Simulasi → LKPD. Nyalakan suara untuk umpan balik audio, dan gunakan tombol Reset untuk mengulang.</p>
+   <p style="color:var(--mut);margin-top:14px">Versi 1.0 · Nilai keelektronegatifan skala Pauling; titik leleh/didih pada tekanan 1 atm (data pembulatan).</p>
+  </div>
+ </div>
+</section>
+
+<section class="pane" id="p-kuis">
+ <div id="quiz">
+  <div class="card" id="qbox" style="height:560px"></div>
+  <div class="card" style="height:560px">
+   <h3>Kemajuan</h3>
+   <div class="pbar"><i id="qpb" style="width:0%"></i></div>
+   <p style="margin-top:10px" id="qsc"></p>
+   <div class="dots" id="qdots"></div>
+   <button class="btn alt" id="qrst" style="margin-top:18px;width:100%">↺ Ulangi kuis</button>
+  </div>
+ </div>
+</section>
+</main>
+</div></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},$$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+var stage=$('#stage'),wrap=$('#wrap');
+function fit(){var w=wrap.clientWidth,h=wrap.clientHeight,s=Math.min(w/1280,h/720);stage.style.transform='translate('+((w-1280*s)/2)+'px,'+((h-720*s)/2)+'px) scale('+s+')'}
+window.addEventListener('resize',fit);fit();
+
+/* ---------- suara ---------- */
+var AC=null,snd=true;
+function tone(f,d,t,v,when){if(!snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime+(when||0);o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||.12,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g);g.connect(AC.destination);o.start(t0);o.stop(t0+d)}catch(e){}}
+var S={click:function(){tone(520,.08,'triangle')},step:function(){tone(660,.1,'sine');tone(880,.14,'sine',.1,.09)},ok:function(){tone(660,.12);tone(880,.12,'sine',.12,.11);tone(1100,.2,'sine',.12,.22)},bad:function(){tone(220,.25,'sawtooth',.08);tone(165,.3,'sawtooth',.08,.12)},rst:function(){tone(440,.1,'square',.05);tone(330,.15,'square',.05,.1)}};
+$('#snd').onclick=function(){snd=!snd;this.textContent=snd?'🔊 Suara: Aktif':'🔇 Suara: Mati';if(snd)S.click()};
+
+/* ---------- splash ---------- */
+S.tick=function(){tone(900,.04,'square',.04)};
+S.ready=function(){tone(880,.1);tone(1320,.2,'sine',.1,.1)};
+S.start=function(){tone(392,.15,'triangle',.14);tone(523,.15,'triangle',.14,.12);tone(659,.15,'triangle',.14,.24);tone(784,.4,'triangle',.14,.36)};
+(function(){
+ var sp=$('#splash'),spf=$('#spf'),spp=$('#spp'),spm=$('#spm'),spb=$('#spbtn'),pr=0,last=0;
+ var MSG=['Memuat data unsur…','Menyusun tabel keelektronegatifan…','Menyiapkan model VSEPR…','Menghubungkan simulasi & LKPD…','Menyiapkan kuis…'];
+ var iv=setInterval(function(){
+  pr=Math.min(100,pr+Math.random()*6+2.5);
+  spf.style.width=pr+'%';spp.textContent=Math.round(pr)+'%';
+  spm.textContent=MSG[Math.min(MSG.length-1,Math.floor(pr/100*MSG.length))];
+  var st=Math.floor(pr/10);if(st>last){last=st;S.tick()}
+  if(pr>=100){clearInterval(iv);spb.disabled=false;spm.textContent='Siap! Tekan MULAI untuk masuk.';S.ready()}
+ },170);
+ spb.onclick=function(){if(spb.disabled)return;S.start();sp.classList.add('out');setTimeout(function(){sp.style.display='none'},650)};
+ $('#spsnd').onclick=function(){snd=!snd;var t=snd?'🔊 Suara: Aktif':'🔇 Suara: Mati';this.textContent=t;$('#snd').textContent=t;if(snd)S.click()};
+})();
+
+/* ---------- tab ---------- */
+function goTab(t){$$('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.t===t)});$$('.pane').forEach(function(p){p.classList.remove('on')});$('#p-'+t).classList.add('on')}
+$$('.tab').forEach(function(b){b.onclick=function(){S.click();goTab(b.dataset.t)}});
+
+/* ---------- teori ---------- */
+var T=[
+'<div class="g3">'+
+'<div class="card" style="height:470px"><h2>🧂 Ikatan Ion</h2><p>Terjadi antara <b>logam</b> dan <b>nonlogam</b>. Satu atom melepas elektron (menjadi kation), atom lain menerimanya (menjadi anion); keduanya tarik-menarik secara elektrostatik.</p><p>Ciri: membentuk <b>kisi kristal</b>, titik leleh &amp; didih tinggi, keras namun rapuh, menghantarkan listrik saat lelehan atau larutan.</p><p>Contoh: NaCl, MgO, CaF₂.</p><p><span class="chip">ΔEN umumnya &gt; 1,7</span></p></div>'+
+'<div class="card" style="height:470px"><h2>🔗 Ikatan Kovalen</h2><p>Terjadi antar <b>nonlogam</b> melalui pemakaian bersama pasangan elektron.</p><p><b>Kovalen nonpolar</b> (ΔEN &lt; 0,4): elektron dipakai hampir sama rata. Contoh: N₂, CH₄.</p><p><b>Kovalen polar</b> (ΔEN 0,4–1,7): elektron lebih tertarik ke atom yang lebih elektronegatif sehingga muncul muatan parsial δ+ dan δ−. Contoh: HCl, H₂O.</p><p>Zat molekuler umumnya bertitik didih rendah karena yang diatasi saat mendidih adalah gaya antarmolekul, bukan ikatan kovalen.</p></div>'+
+'<div class="card" style="height:470px"><h2>🔩 Ikatan Logam</h2><p>Kation logam tersusun rapat dalam “lautan elektron” yang bebas bergerak.</p><p>Ciri: menghantarkan listrik &amp; panas, mengilap, dapat ditempa dan ditarik.</p><p>Contoh: Fe, Cu, Al.</p><h3 style="margin-top:16px">Ingat!</h3><p>Ikatan (<i>intramolekul</i>) menentukan <b>jenis zat</b>, sedangkan gaya antarmolekul menentukan <b>sifat fisik zat molekuler</b>.</p></div></div>',
+'<div class="card"><h2>Teori VSEPR: pasangan elektron saling tolak</h2><p>Pasangan elektron di sekitar atom pusat menempati posisi yang menjauhkan satu sama lain. Pasangan elektron bebas (PEB) menolak lebih kuat sehingga sudut ikatan mengecil.</p><table><tr><th>PEI</th><th>PEB</th><th>Bentuk molekul</th><th>Sudut</th><th>Contoh</th></tr><tr><td>2</td><td>0</td><td>Linear</td><td>180°</td><td>CO₂</td></tr><tr><td>3</td><td>0</td><td>Segitiga planar</td><td>120°</td><td>BF₃</td></tr><tr><td>4</td><td>0</td><td>Tetrahedral</td><td>109,5°</td><td>CH₄</td></tr><tr><td>3</td><td>1</td><td>Trigonal piramida</td><td>±107°</td><td>NH₃</td></tr><tr><td>2</td><td>2</td><td>Bentuk V (bengkok)</td><td>±104,5°</td><td>H₂O</td></tr></table><p style="margin-top:10px"><b>Kepolaran molekul:</b> ikatan polar + bentuk <u>simetris</u> → momen dipol saling meniadakan (nonpolar, mis. CO₂, BF₃, CH₄). Ikatan polar + bentuk <u>tidak simetris</u> → molekul polar (mis. H₂O, NH₃, HCl).</p></div>',
+'<div class="g3"><div class="card" style="height:470px"><h2>🌀 Gaya London</h2><p>Dipol sesaat–dipol terinduksi. Ada pada <b>semua</b> molekul, dominan pada molekul nonpolar.</p><p>Makin besar Mr / makin mudah elektron berpindah, makin kuat.</p><p>Contoh: CH₄, N₂, CO₂, BF₃.</p><p><span class="chip">Terlemah</span></p></div><div class="card" style="height:470px"><h2>➕➖ Dipol–Dipol</h2><p>Tarik-menarik antara ujung δ+ satu molekul polar dengan ujung δ− molekul polar lain.</p><p>Contoh: HCl.</p><p><span class="chip">Sedang</span></p><h2 style="margin-top:14px">💧 Ikatan Hidrogen</h2><p>H yang terikat pada <b>F, O, atau N</b> tertarik ke PEB F/O/N molekul lain. Contoh: H₂O, NH₃.</p><p><span class="chip">Terkuat antarmolekul</span></p></div><div class="card" style="height:470px"><h2>🌡️ Menuju Sifat Fisik</h2><p>• Makin kuat gaya antarmolekul → titik leleh &amp; didih makin tinggi.<br>• Senyawa ion: gaya elektrostatik sangat kuat → padat, titik didih sangat tinggi.<br>• <b>“Like dissolves like”</b>: zat polar larut dalam pelarut polar (air); zat nonpolar larut dalam pelarut nonpolar.<br>• Zat ion menghantar listrik hanya saat lelehan atau larutan.</p><p style="color:var(--mut)">Coba buktikan di tab Simulasi!</p></div></div>'
+];
+function showT(i){$('#tbody').innerHTML=T[i];$$('#tsub .btn').forEach(function(b){b.classList.toggle('on',+b.dataset.s===i)})}
+$$('#tsub .btn').forEach(function(b){b.onclick=function(){S.click();showT(+b.dataset.s)}});showT(0);
+
+/* ---------- data zat ---------- */
+var EN={H:2.20,C:2.55,N:3.04,O:3.44,F:3.98,Cl:3.16,Na:0.93,B:2.04};
+var COL={H:'#dfe6ee',C:'#5d6670',N:'#3b7be0',O:'#e5484d',F:'#38b36b',Cl:'#27a89a',Na:'#8e5fd1',B:'#e78fb3'};
+var RAD={H:24,C:32,N:32,O:32,F:28,Cl:38,B:30,Na:40};
+var M=[
+{f:'NaCl',nm:'Natrium klorida',ion:1,atoms:[['Na',190,200],['Cl',370,200]],bonds:[],lp:[],net:[1,0],den:'Cl 3,16 − Na 0,93 → ΔEN = 2,23',type:'Ikatan ion',tnote:'Logam + nonlogam: Na melepas 1 elektron kepada Cl.',shape:'Kisi kristal (bukan molekul)',ang:'–',pei:'Tidak berlaku',polar:'Senyawa ion',why:'Terdiri dari ion Na⁺ dan Cl⁻ yang tersusun teratur.',force:'Gaya elektrostatik antar-ion',str:5,mp:'801 °C',bp:1413,bpt:'1.413 °C',state:'Padat',sol:'Larut dalam air (pelarut polar)',cond:'Menghantar saat lelehan/larutan'},
+{f:'HCl',nm:'Hidrogen klorida',atoms:[['H',190,200],['Cl',360,200]],bonds:[[0,1,1]],lp:[],net:[1,0],den:'Cl 3,16 − H 2,20 → ΔEN = 0,96',type:'Kovalen polar',tnote:'Dua nonlogam, ΔEN antara 0,4–1,7.',shape:'Linear',ang:'180°',pei:'1 PEI, 3 PEB pada Cl (2 atom)',polar:'Polar',why:'Hanya satu ikatan polar, tidak ada yang meniadakan.',force:'Dipol–dipol (+ London)',str:2,mp:'−114 °C',bp:188,bpt:'−85 °C',state:'Gas',sol:'Sangat larut dalam air',cond:'Tidak menghantar (murni)'},
+{f:'H₂O',nm:'Air',atoms:[['O',280,160],['H',190,260],['H',370,260]],bonds:[[0,1,1],[0,2,1]],lp:[[280,100]],net:[0,-1],den:'O 3,44 − H 2,20 → ΔEN = 1,24',type:'Kovalen polar',tnote:'Dua nonlogam, ΔEN antara 0,4–1,7.',shape:'Bentuk V (bengkok)',ang:'±104,5°',pei:'2 PEI, 2 PEB',polar:'Polar',why:'Bentuk V tidak simetris: dipol tidak saling meniadakan.',force:'Ikatan hidrogen',str:4,mp:'0 °C',bp:373,bpt:'100 °C',state:'Cair',sol:'Pelarut polar universal',cond:'Hantaran sangat kecil (murni)'},
+{f:'CO₂',nm:'Karbon dioksida',atoms:[['O',130,200],['C',280,200],['O',430,200]],bonds:[[0,1,2],[1,2,2]],lp:[],net:null,den:'O 3,44 − C 2,55 → ΔEN = 0,89',type:'Kovalen polar',tnote:'Ikatan C=O polar, ΔEN 0,4–1,7.',shape:'Linear',ang:'180°',pei:'2 PEI, 0 PEB',polar:'Nonpolar',why:'Dua dipol sama besar, berlawanan arah → saling meniadakan.',force:'Gaya London',str:1,mp:'−57 °C (5 atm)',bp:195,bpt:'−78,5 °C (menyublim)',state:'Gas',sol:'Sedikit larut dalam air',cond:'Tidak menghantar'},
+{f:'NH₃',nm:'Amonia',atoms:[['N',280,150],['H',190,260],['H',370,260],['H',280,310]],bonds:[[0,1,1],[0,2,1],[0,3,1]],lp:[[280,92]],net:[0,-1],den:'N 3,04 − H 2,20 → ΔEN = 0,84',type:'Kovalen polar',tnote:'Dua nonlogam, ΔEN antara 0,4–1,7.',shape:'Trigonal piramida',ang:'±107°',pei:'3 PEI, 1 PEB',polar:'Polar',why:'Bentuk piramida + PEB: dipol tidak saling meniadakan.',force:'Ikatan hidrogen',str:3,mp:'−78 °C',bp:240,bpt:'−33 °C',state:'Gas',sol:'Sangat larut dalam air',cond:'Menghantar lemah (larutan)'},
+{f:'CH₄',nm:'Metana',atoms:[['C',280,200],['H',280,90],['H',180,280],['H',380,280],['H',280,320]],bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]],lp:[],net:null,den:'C 2,55 − H 2,20 → ΔEN = 0,35',type:'Kovalen nonpolar',tnote:'ΔEN kecil (< 0,4): elektron dipakai hampir sama.',shape:'Tetrahedral',ang:'109,5°',pei:'4 PEI, 0 PEB',polar:'Nonpolar',why:'Ikatan hampir nonpolar dan bentuk sangat simetris.',force:'Gaya London',str:1,mp:'−182 °C',bp:111,bpt:'−162 °C',state:'Gas',sol:'Tidak larut dalam air',cond:'Tidak menghantar'},
+{f:'BF₃',nm:'Boron trifluorida',atoms:[['B',280,200],['F',280,86],['F',180,274],['F',380,274]],bonds:[[0,1,1],[0,2,1],[0,3,1]],lp:[],net:null,den:'F 3,98 − B 2,04 → ΔEN = 1,94',type:'Kovalen polar',tnote:'ΔEN besar, tetapi B–F antar nonlogam sehingga tetap kovalen (polar).',shape:'Segitiga planar',ang:'120°',pei:'3 PEI, 0 PEB',polar:'Nonpolar',why:'Tiga dipol identik pada bentuk simetris → resultan nol.',force:'Gaya London',str:1,mp:'−127 °C',bp:173,bpt:'−100 °C',state:'Gas',sol:'Bereaksi (terhidrolisis) dengan air',cond:'Tidak menghantar'},
+{f:'N₂',nm:'Nitrogen',atoms:[['N',210,200],['N',350,200]],bonds:[[0,1,3]],lp:[],net:null,den:'N 3,04 − N 3,04 → ΔEN = 0',type:'Kovalen nonpolar',tnote:'Dua atom sama: ΔEN = 0.',shape:'Linear',ang:'180°',pei:'3 pasang PEI (ikatan rangkap tiga)',polar:'Nonpolar',why:'Atom identik, tidak ada perbedaan keelektronegatifan.',force:'Gaya London',str:1,mp:'−210 °C',bp:77,bpt:'−196 °C',state:'Gas',sol:'Tidak larut dalam air',cond:'Tidak menghantar'}
+];
+var sel=0,step=0;
+var STEPN=['1 · Hitung ΔEN','2 · Bentuk VSEPR','3 · Dipol & Kepolaran','4 · Gaya Antarmolekul','5 · Prediksi Sifat'];
+var HINT=['Pilih zat lalu mulai dari langkah 1. Langkah berikutnya terbuka berurutan.','Bandingkan keelektronegatifan (χ) atom penyusunnya. Zat ini ikatan ion, kovalen polar, atau nonpolar?','Hitung PEI dan PEB di atom pusat, lalu perhatikan bentuk dan sudutnya.','Panah menunjuk atom yang lebih elektronegatif. Apakah resultan dipolnya nol?','Garis putus-putus = gaya antarmolekul. Makin tebal, makin kuat. Apa dampaknya pada titik didih?','Bandingkan posisi zat ini pada grafik titik didih. Coba zat lain!'];
+
+var mols=$('#mols'),stps=$('#stps');
+M.forEach(function(m,i){var b=document.createElement('button');b.className='btn alt';b.textContent=m.f;b.onclick=function(){sel=i;step=0;S.click();render()};mols.appendChild(b)});
+STEPN.forEach(function(n,i){var b=document.createElement('button');b.className='btn';b.textContent=n;b.onclick=function(){if(i<=step){step=i+1;S.step();render()}};stps.appendChild(b)});
+$('#simrst').onclick=function(){step=0;S.rst();render()};
+
+function svgT(x,y,t,sz,fill,anchor,w){return '<text x="'+x+'" y="'+y+'" font-size="'+sz+'" fill="'+fill+'" text-anchor="'+(anchor||'middle')+'" font-weight="'+(w||600)+'" font-family="system-ui,sans-serif">'+t+'</text>'}
+function arrow(x1,y1,x2,y2,c,w){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+w+'" stroke-linecap="round" marker-end="url(#ah)"/>'}
+
+function draw(){
+ var m=M[sel],s='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--acc2)"/></marker></defs>';
+ var A=m.atoms,q=A.map(function(){return 0});
+ if(step>=2)s+=svgT(280,34,m.shape+(m.ang!=='–'?' · '+m.ang:''),20,'var(--acc)');
+ else s+=svgT(280,34,m.nm+' ('+m.f+')',20,'var(--ink)');
+ m.bonds.forEach(function(b){var a=A[b[0]],c=A[b[1]],dx=c[1]-a[1],dy=c[2]-a[2],L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;
+  for(var i=0;i<b[2];i++){var o=(i-(b[2]-1)/2)*10;s+='<line x1="'+(a[1]+nx*o)+'" y1="'+(a[2]+ny*o)+'" x2="'+(c[1]+nx*o)+'" y2="'+(c[2]+ny*o)+'" stroke="var(--mut)" stroke-width="6" stroke-linecap="round"/>'}
+  var d=EN[a[0]]-EN[c[0]];q[b[0]]-=d;q[b[1]]+=d;});
+ if(m.ion){s+='<line x1="235" y1="200" x2="325" y2="200" stroke="var(--line)" stroke-width="3" stroke-dasharray="4 6"/>'}
+ m.lp.forEach(function(p){s+='<ellipse cx="'+(p[0]-14)+'" cy="'+p[1]+'" rx="6" ry="9" fill="var(--acc2)" opacity=".9"/><ellipse cx="'+(p[0]+14)+'" cy="'+p[1]+'" rx="6" ry="9" fill="var(--acc2)" opacity=".9"/>'});
+ A.forEach(function(a,i){var r=RAD[a[0]]+(m.ion?8:0);s+='<circle cx="'+a[1]+'" cy="'+a[2]+'" r="'+r+'" fill="'+COL[a[0]]+'" stroke="var(--ink)" stroke-opacity=".35" stroke-width="2"/>'+svgT(a[1],a[2]+6,a[0]+(m.ion?(i?'⁻':'⁺'):''),a[0]==='H'?18:20,a[0]==='H'?'#1b2a3a':'#fff','middle',700);
+  if(step>=1)s+=svgT(a[1],a[2]+r+18,'χ = '+String(EN[a[0]]).replace('.',','),14,'var(--mut)');
+  if(step>=3){var v=q[i];if(m.ion)s+=svgT(a[1],a[2]-r-8,i?'−':'+',20,'var(--acc2)');else if(Math.abs(v)>0.3)s+=svgT(a[1],a[2]-r-8,v>0?'δ−':'δ+',18,'var(--acc2)');}});
+ if(step>=3){
+  m.bonds.forEach(function(b){var a=A[b[0]],c=A[b[1]],d=EN[a[0]]-EN[c[0]];if(Math.abs(d)<0.3)return;var f=d>0?c:a,t=d>0?a:c;
+   var dx=f[1]-t[1],dy=f[2]-t[2],L=Math.hypot(dx,dy),nx=-dy/L*20,ny=dx/L*20;
+   // from less EN toward more EN
+   var sx=t[1]+dx*0.34+nx,sy=t[2]+dy*0.34+ny,ex=t[1]+dx*0.68+nx,ey=t[2]+dy*0.68+ny;
+   if(b[2]>1){sx+=nx*.8;sy+=ny*.8;ex+=nx*.8;ey+=ny*.8}
+   s+=arrow(sx,sy,ex,ey,'var(--acc2)',4)});
+  if(m.ion)s+=arrow(225,150,335,150,'var(--acc2)',4)+svgT(280,138,'e⁻ berpindah',13,'var(--acc2)');
+  var bx=480,by=380;
+  if(m.net){s+=arrow(bx-m.net[0]*34,by-m.net[1]*34,bx+m.net[0]*34,by+m.net[1]*34,'var(--ok)',7).replace('url(#ah)','url(#ah)')+svgT(bx,by+(m.net[1]>0?60:-44),'μ total ≠ 0',14,'var(--ok)')}
+  else s+='<circle cx="480" cy="380" r="22" fill="none" stroke="var(--ok)" stroke-width="4"/>'+svgT(480,386,'0',20,'var(--ok)')+svgT(480,424,'μ total = 0',14,'var(--ok)');
+ }
+ if(step>=4){
+  var w=m.str*2.2+1;
+  s+='<rect x="30" y="372" width="64" height="40" rx="12" fill="var(--surf2)" stroke="var(--line)"/>'+svgT(62,398,m.f,15,'var(--ink)')+
+  '<rect x="266" y="372" width="64" height="40" rx="12" fill="var(--surf2)" stroke="var(--line)"/>'+svgT(298,398,m.f,15,'var(--ink)')+
+  '<line class="dash" x1="100" y1="392" x2="260" y2="392" stroke="var(--acc)" stroke-width="'+w+'" stroke-dasharray="'+(m.str>2?'10 6':'3 8')+'"/>'+svgT(180,366,m.force.split(' (')[0],12,'var(--acc)');
+ }
+ $('#cv').innerHTML=s;
+}
+function row(k,v){return '<div class="row"><b>'+k+'</b><span>'+v+'</span></div>'}
+function info(){
+ var m=M[sel],h='<h3>Data analisis · '+m.f+' ('+m.nm+')</h3>';
+ if(step<1)h+='<p style="color:var(--mut)">Belum ada data. Mulai dengan langkah 1.</p>';
+ if(step>=1)h+=row('Selisih χ',m.den)+row('Jenis ikatan','<b>'+m.type+'</b><br><small>'+m.tnote+'</small>');
+ if(step>=2)h+=row('Bentuk',m.shape+' ('+m.ang+')')+row('Domain elektron',m.pei);
+ if(step>=3)h+=row('Kepolaran','<b>'+m.polar+'</b><br><small>'+m.why+'</small>');
+ if(step>=4)h+=row('Gaya antarmolekul','<b>'+m.force+'</b> <span class="meter"><i style="width:'+m.str*20+'%"></i></span>');
+ if(step>=5)h+=row('Titik leleh / didih',m.mp+' / '+m.bpt)+row('Wujud 25 °C',m.state)+row('Kelarutan',m.sol)+row('Daya hantar',m.cond);
+ $('#info').innerHTML=h;
+}
+function chart(){
+ if(step<5){$('#chart').innerHTML='<p style="color:var(--mut)">Selesaikan langkah 5 untuk membuka grafik.</p>';return}
+ var o=M.map(function(m,i){return {m:m,i:i}}).sort(function(a,b){return a.m.bp-b.m.bp}),mx=Math.sqrt(1700),h='';
+ o.forEach(function(x){h+='<div class="bar'+(x.i===sel?' me':'')+'"><span>'+x.m.f+'</span><em><i style="width:'+(Math.sqrt(x.m.bp)/mx*100)+'%"></i></em><small>'+x.m.bpt.split(' (')[0]+'</small></div>'});
+ $('#chart').innerHTML=h+'<p style="font-size:12px;color:var(--mut);margin-top:4px">Panjang batang memakai skala akar agar semua zat terlihat.</p>';
+}
+function render(){
+ $$('#mols .btn').forEach(function(b,i){b.classList.toggle('on',i===sel)});
+ $$('#stps .btn').forEach(function(b,i){b.disabled=i>step;b.style.outline=i===step?'3px solid var(--acc2)':'none'});
+ $('#hint').innerHTML='<b>💡 Petunjuk:</b> '+HINT[step];
+ draw();info();chart();
+}
+render();
+
+/* ---------- LKPD ---------- */
+var Q=[
+['Ikatan yang terbentuk antara Na dan Cl adalah …',['Pilih…','Ikatan ion','Kovalen polar','Kovalen nonpolar','Ikatan logam'],1],
+['Bentuk molekul H₂O (2 PEI, 2 PEB) adalah …',['Pilih…','Linear','Bentuk V','Segitiga planar','Tetrahedral'],2],
+['CO₂ memiliki ikatan polar tetapi molekulnya nonpolar karena …',['Pilih…','Ikatan C=O sangat lemah','Momen dipol saling meniadakan','Terdapat PEB pada C','C dan O sama elektronegatif'],2],
+['Titik didih H₂O jauh lebih tinggi daripada CH₄ karena H₂O memiliki …',['Pilih…','Mr lebih besar','Ikatan ion','Ikatan hidrogen','Ikatan rangkap'],3],
+['Urutan titik didih dari terendah ke tertinggi yang benar adalah …',['Pilih…','NaCl < H₂O < HCl < CH₄','CH₄ < HCl < H₂O < NaCl','HCl < CH₄ < NaCl < H₂O','H₂O < CH₄ < HCl < NaCl'],2],
+['Zat yang larut dalam air dan menghantar listrik saat lelehan adalah …',['Pilih…','CH₄','N₂','NaCl','CO₂'],3],
+['BF₃ memiliki bentuk segitiga planar. Kepolaran BF₃ adalah …',['Pilih…','Polar, karena ΔEN B–F besar','Nonpolar, karena dipol saling meniadakan','Polar, karena ada PEB','Ion, karena ada logam'],2],
+['Gaya antarmolekul utama pada NH₃ adalah …',['Pilih…','Gaya London saja','Ikatan ion','Ikatan hidrogen','Ikatan logam'],3]
+];
+var lk=$('#lk');
+Q.forEach(function(q,i){var d=document.createElement('div');d.className='card q';d.id='q'+i;
+ d.innerHTML='<p><b>'+(i+1)+'.</b> '+q[0]+'</p><select>'+q[1].map(function(o,j){return '<option value="'+j+'">'+o+'</option>'}).join('')+'</select><div class="fb"></div>';lk.appendChild(d)});
+var kes=document.createElement('div');kes.className='card q';kes.style.gridColumn='1 / span 2';
+kes.innerHTML='<p><b>Kesimpulan:</b> Jelaskan dengan kalimatmu sendiri hubungan jenis ikatan, bentuk molekul, dan gaya antarmolekul terhadap sifat fisik zat.</p><textarea rows="2" placeholder="Tulis kesimpulanmu di sini…"></textarea>';lk.appendChild(kes);
+$('#cek').onclick=function(){var ok=0,empty=0;
+ Q.forEach(function(q,i){var d=$('#q'+i),v=+d.querySelector('select').value,fb=d.querySelector('.fb');d.classList.remove('ok','no');
+  if(!v){empty++;fb.textContent='';return}
+  if(v===q[2]){ok++;d.classList.add('ok');fb.style.color='var(--ok)';fb.textContent='✔ Benar'}else{d.classList.add('no');fb.style.color='var(--bad)';fb.textContent='✘ Belum tepat. Cek kembali di tab Teori/Simulasi.'}});
+ var sc=Math.round(ok/Q.length*100);$('#skor').textContent='Skor: '+sc+' ('+ok+'/'+Q.length+' benar'+(empty?', '+empty+' kosong':'')+')';
+ (sc>=75?S.ok:S.bad)();};
+function lkReset(){$$('#lk select').forEach(function(s){s.value=0});$$('#lk textarea').forEach(function(t){t.value=''});$$('#lk .q').forEach(function(d){d.classList.remove('ok','no')});$$('#lk .fb').forEach(function(f){f.textContent=''});$('#skor').textContent='Skor: –'}
+$('#lkrst').onclick=function(){S.rst();lkReset()};
+
+/* ---------- kuis ---------- */
+var QZ=[
+['Unsur yang paling mungkin membentuk ikatan ion dengan klorin (Cl) adalah …',['Natrium (Na)','Karbon (C)','Nitrogen (N)','Hidrogen (H)'],0,'Na adalah logam dan Cl nonlogam: Na melepas elektron, Cl menerimanya, terbentuk ikatan ion.'],
+['Dua atom dengan ΔEN = 0,2 membentuk ikatan …',['Ion','Kovalen polar','Kovalen nonpolar','Logam'],2,'ΔEN < 0,4 berarti elektron dipakai hampir sama rata (kovalen nonpolar).'],
+['Jumlah PEI dan PEB pada atom pusat NH₃ adalah …',['4 PEI, 0 PEB','3 PEI, 1 PEB','2 PEI, 2 PEB','2 PEI, 0 PEB'],1,'N punya 3 ikatan dengan H dan 1 pasangan elektron bebas, sehingga bentuknya trigonal piramida.'],
+['Bentuk molekul CH₄ dengan sudut ikatan 109,5° adalah …',['Linear','Segitiga planar','Bentuk V','Tetrahedral'],3,'Empat PEI tanpa PEB tersebar sejauh mungkin: tetrahedral.'],
+['Molekul berikut yang bersifat polar adalah …',['CO₂','CH₄','HCl','N₂'],2,'HCl hanya memiliki satu ikatan polar sehingga dipolnya tidak ada yang meniadakan.'],
+['Gaya antarmolekul yang paling kuat di antara pilihan berikut adalah …',['Gaya London','Dipol–dipol','Dipol sesaat','Ikatan hidrogen'],3,'Ikatan hidrogen adalah bentuk dipol–dipol yang paling kuat.'],
+['Ikatan hidrogen terjadi pada HF tetapi tidak pada HCl karena …',['HCl bersifat ionik','F sangat elektronegatif, kecil, dan punya PEB','Cl lebih kecil dari F','H pada HCl tidak berikatan kovalen'],1,'Ikatan hidrogen mensyaratkan H terikat pada F, O, atau N yang sangat elektronegatif dan berukuran kecil.'],
+['HCl bertitik didih lebih tinggi daripada N₂ karena HCl memiliki …',['Dipol–dipol','Ikatan ion','Ikatan logam','Ikatan rangkap tiga'],0,'HCl polar sehingga ada dipol–dipol selain gaya London; N₂ nonpolar hanya punya gaya London.'],
+['Zat yang paling mudah larut dalam air adalah …',['CH₄','N₂','BF₃','NH₃'],3,'NH₃ polar dan dapat membentuk ikatan hidrogen dengan air (like dissolves like).'],
+['Saat air mendidih, yang terputus adalah …',['Ikatan kovalen O–H','Gaya antarmolekul (ikatan hidrogen)','Ikatan ion','Inti atom'],1,'Perubahan wujud hanya mengatasi gaya antarmolekul; ikatan O–H dalam molekul tetap utuh.']
+];
+var qi=0,qs=0,qans=false,qres=[];
+function qSide(){$('#qpb').style.width=(qi/QZ.length*100)+'%';$('#qsc').innerHTML='Soal: <b>'+Math.min(qi+1,QZ.length)+' / '+QZ.length+'</b> · Benar: <b>'+qs+'</b>';
+ $('#qdots').innerHTML=QZ.map(function(x,i){return '<i class="'+(qres[i]===1?'r':qres[i]===0?'w':(i===qi?'c':''))+'">'+(i+1)+'</i>'}).join('')}
+function qRender(){
+ var b=$('#qbox');qSide();
+ if(qi>=QZ.length){var sc=qs*10,msg=sc>=80?'🏆 Luar biasa! Kamu menguasai materi ini.':sc>=70?'👍 Bagus! Kriteria keberhasilan tercapai.':'📖 Ayo ulangi Teori dan Simulasi, lalu coba lagi.';
+  b.innerHTML='<div style="text-align:center;padding-top:80px"><h2>Hasil Kuis</h2><div class="big" style="font-size:96px">'+sc+'</div><p style="font-size:20px">'+qs+' dari '+QZ.length+' soal benar</p><p style="font-size:18px;font-weight:600;color:var(--acc2)">'+msg+'</p><button class="btn" id="qagain" style="margin-top:16px;font-size:16px">↺ Ulangi kuis</button></div>';
+  $('#qagain').onclick=function(){S.rst();quizInit()};(sc>=70?S.ok:S.bad)();return}
+ var q=QZ[qi];qans=false;
+ b.innerHTML='<h3>Soal '+(qi+1)+' dari '+QZ.length+'</h3><p style="font-size:20px;font-weight:600;margin-bottom:16px">'+q[0]+'</p><div id="qopts">'+q[1].map(function(o,j){return '<button class="btn alt opt" data-j="'+j+'">'+String.fromCharCode(65+j)+'. '+o+'</button>'}).join('')+'</div><div id="qfb" style="min-height:54px;font-size:15px"></div><button class="btn" id="qnext" disabled style="float:right">'+(qi===QZ.length-1?'Lihat hasil ▶':'Soal berikutnya ▶')+'</button>';
+ $$('#qopts .opt').forEach(function(o){o.onclick=function(){if(qans)return;qans=true;var j=+o.dataset.j,ok=j===q[2];
+  $$('#qopts .opt')[q[2]].classList.add('right');if(!ok)o.classList.add('wrong');
+  qres[qi]=ok?1:0;if(ok)qs++;(ok?S.ok:S.bad)();
+  $('#qfb').innerHTML='<b style="color:var('+(ok?'--ok':'--bad')+')">'+(ok?'✔ Benar!':'✘ Kurang tepat.')+'</b> '+q[3];$('#qnext').disabled=false;qSide()}});
+ $('#qnext').onclick=function(){S.click();qi++;qRender()};
+}
+function quizInit(){qi=0;qs=0;qans=false;qres=[];qRender()}
+$('#qrst').onclick=function(){S.rst();quizInit()};
+$('#mulai').onclick=function(){S.click();goTab('teori')};
+quizInit();
+
+/* ---------- pengembang & reset ---------- */
+$('#hello').onclick=function(){S.ok();$('#hellotxt').textContent='Semoga belajar kimia jadi lebih menyenangkan! — Ana Marleni, S.Pd, M.Pd, Gr'};
+$('#rst').onclick=function(){S.rst();sel=0;step=0;render();lkReset();showT(0);$('#nama').value='';$('#hellotxt').textContent='';quizInit();goTab('tujuan')};
+})();
+</script>
+</body>
+</html>
